@@ -42,12 +42,14 @@ object Boot {
     Behaviors.setup { context =>
       implicit val system = context.system
 
+      val httpPort = context.system.settings.config.getInt("http-server.port")
+
       val settings = EventProcessorSettings(system)
 
       EmployeeEntityProto.init(system, settings)
 
       val httpRoutes = new HttpRoutes()
-      new WebServer(httpRoutes.routes).start()
+      new WebServer(httpRoutes.routes, httpPort).start()
 
 
       Behaviors.receiveSignal {
@@ -61,6 +63,7 @@ object Boot {
   def config(port: Int, httpPort: Int): Config =
     ConfigFactory.parseString(s"""
       akka.remote.artery.canonical.port = $port
+      http-server.port = $httpPort
        """).withFallback(ConfigFactory.load())
 
 

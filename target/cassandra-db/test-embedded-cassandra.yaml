@@ -38,7 +38,7 @@ start_native_transport: true
 native_transport_port: 9042
 
 # TCP port, for commands and data
-storage_port: 38323
+storage_port: 46419
 
 # Whether to start the thrift rpc server.
 start_rpc: false

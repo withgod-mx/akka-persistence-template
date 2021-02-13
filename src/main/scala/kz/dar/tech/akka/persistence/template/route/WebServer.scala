@@ -8,12 +8,12 @@ import com.typesafe.config.Config
 import scala.util.{Failure, Success}
 import scala.concurrent.duration._
 
-class WebServer(routes: Route)(implicit system: ActorSystem[_], config: Config) {
+class WebServer(routes: Route, port: Int)(implicit system: ActorSystem[_], config: Config) {
 
     import system.executionContext
 
     def start(): Unit = {
-      Http().newServerAt(config.getString("http-server.interface"), port = config.getInt("http-server.port")).bind(routes)
+      Http().newServerAt(config.getString("http-server.interface"), port = port).bind(routes)
         .map(_.addToCoordinatedShutdown(3.seconds))
         .onComplete {
           case Success(binding) =>
