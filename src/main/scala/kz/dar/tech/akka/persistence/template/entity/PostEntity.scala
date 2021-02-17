@@ -3,7 +3,8 @@ package kz.dar.tech.akka.persistence.template.entity
 import akka.actor.typed.Behavior
 import akka.cluster.sharding.typed.scaladsl.EntityTypeKey
 import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior}
+import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, RetentionCriteria}
+import kz.dar.tech.akka.persistence.template.adapter.PostEventAdapter
 import kz.dar.tech.akka.persistence.template.command.{CreatePostCommand, PostCommand, RegisterPostCommand}
 import kz.dar.tech.akka.persistence.template.event.{CreatePostEvent, PostEvent, RegisterPostEvent}
 
@@ -73,13 +74,15 @@ object PostEntity {
   val EntityKey: EntityTypeKey[PostCommand] = EntityTypeKey[PostCommand]("Post")
 
 
-  def apply(postId: String): Behavior[PostCommand] = {
+  def apply(postId: String, eventProcessorTag: Set[String]): Behavior[PostCommand] = {
     EventSourcedBehavior[PostCommand, PostEvent, StateHolder](
     persistenceId = PersistenceId(EntityKey.name, postId),
     StateHolder.empty,
     (state, command) => commandHandler(postId, state, command),
     (state, event) => handleEvent(state, event)
-    )
+    ).withTagger(_ => eventProcessorTag)
+      .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 10, keepNSnapshots = 2))
+      .eventAdapter(new PostEventAdapter)
   }
 
 
