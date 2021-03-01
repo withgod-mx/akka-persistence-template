@@ -14,6 +14,12 @@ import kz.dar.tech.akka.persistence.template.command.CreatePostCommand
 import kz.dar.tech.akka.persistence.template.entity.{EmployeeEntityProto, PostEntity}
 import kz.dar.tech.akka.persistence.template.model.{PostDTO, SummaryPost}
 
+import io.circe.{Json, parser}
+import io.circe.generic.auto._
+import io.circe.syntax._
+
+import scala.util.{ Failure, Success }
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class PostRoute(implicit system: ActorSystem[_], implicit val executionContext: ExecutionContext) extends Codec with FailFastCirceSupport {
@@ -49,22 +55,19 @@ class PostRoute(implicit system: ActorSystem[_], implicit val executionContext: 
             val message = HttpRequest(
               method = HttpMethods.POST,
               uri = "http://localhost:8080/api/v1/post/create",
-              entity = HttpEntity(ContentTypes.`application/json`, summary.toString())
+              entity = HttpEntity(ContentTypes.`application/json`, summary.asJson.noSpaces)
             )
 
-            val vv = Http().singleRequest(message) flatMap {
-              case response@HttpResponse(StatusCodes.OK, _, _, _) => {
-                response.entity.dataBytes.runReduce(_ ++ _).map(_.utf8String) map { jsonString: String =>
-                  //response.discardEntityBytes()
-                  parse(jsonString) match {
-                    case Right(v) => v
-                    case Left(exception) => throw exception
-                  }
-                }
-              }
-            }
+            val responseFuture: Future[HttpResponse] = Http().singleRequest(message)
 
-            complete(vv)
+            responseFuture
+              .onComplete {
+                case Success(res) => println(res)
+                case Failure(_)   => sys.error("something wrong")
+              }
+
+
+            complete("OK")
           }
         }
       }

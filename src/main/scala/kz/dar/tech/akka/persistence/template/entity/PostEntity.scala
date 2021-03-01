@@ -1,13 +1,16 @@
 package kz.dar.tech.akka.persistence.template.entity
 
-import akka.actor.typed.Behavior
-import akka.cluster.sharding.typed.scaladsl.EntityTypeKey
+import akka.actor.typed.{ActorSystem, Behavior}
+import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
+import akka.event.slf4j.Logger
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, RetentionCriteria}
 import kz.dar.tech.akka.persistence.template.adapter.PostEventAdapter
 import kz.dar.tech.akka.persistence.template.command.{CreatePostCommand, PostCommand, RegisterPostCommand}
+import kz.dar.tech.akka.persistence.template.entity.EmployeeEntityProto.{EntityKey, getClass, logger}
 import kz.dar.tech.akka.persistence.template.event.{CreatePostEvent, PostEvent, RegisterPostEvent}
 import kz.dar.tech.akka.persistence.template.model.SummaryPost
+import kz.dar.tech.akka.persistence.template.util.EventProcessorSettings
 
 object PostEntity {
 
@@ -71,9 +74,19 @@ object PostEntity {
     def empty: StateHolder = StateHolder(content = Post.empty, state = PostEntityState.INIT)
   }
 
+  private val logger = Logger(getClass.getSimpleName)
 
   val EntityKey: EntityTypeKey[PostCommand] = EntityTypeKey[PostCommand]("Post")
 
+  def init(system: ActorSystem[_], eventProcessorSettings: EventProcessorSettings): Unit = {
+
+    ClusterSharding(system).init(Entity(EntityKey) { entityContext =>
+      val n = math.abs(entityContext.entityId.hashCode % eventProcessorSettings.parallelism)
+      val eventProcessorTag = eventProcessorSettings.tagPrefix + "-" + n
+      PostEntity(entityContext.entityId, Set(eventProcessorTag))
+    })
+
+  }
 
   def apply(postId: String, eventProcessorTag: Set[String]): Behavior[PostCommand] = {
     EventSourcedBehavior[PostCommand, PostEvent, StateHolder](

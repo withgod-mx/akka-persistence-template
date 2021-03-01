@@ -51,8 +51,7 @@ object EmployeeEntityProto {
 
   val EntityKey: EntityTypeKey[EmployeeEntityCommand] = EntityTypeKey[EmployeeEntityCommand]("Employee")
 
-  def init(system: ActorSystem[_],
-           eventProcessorSettings: EventProcessorSettings): Unit = {
+  def init(system: ActorSystem[_], eventProcessorSettings: EventProcessorSettings): Unit = {
 
     logger.info("Cluster sharding initialization")
 

@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior, Terminated}
 import akka.persistence.cassandra.testkit.CassandraLauncher
 import com.typesafe.config.{Config, ConfigFactory}
-import kz.dar.tech.akka.persistence.template.entity.EmployeeEntityProto
+import kz.dar.tech.akka.persistence.template.entity.{EmployeeEntityProto, PostEntity}
 import kz.dar.tech.akka.persistence.template.route.{HttpRoutes, WebServer}
 import kz.dar.tech.akka.persistence.template.util.EventProcessorSettings
 
@@ -50,6 +50,8 @@ object Boot {
       implicit val executionContext = system.executionContext
 
       EmployeeEntityProto.init(system, settings)
+
+      PostEntity.init(system, settings)
 
       val httpRoutes = new HttpRoutes()
       new WebServer(httpRoutes.routes, httpPort).start()
