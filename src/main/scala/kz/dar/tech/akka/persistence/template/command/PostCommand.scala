@@ -1,5 +1,8 @@
 package kz.dar.tech.akka.persistence.template.command
 
+import akka.actor.typed.ActorRef
+import kz.dar.tech.akka.persistence.template.model.{Summary, SummaryPost}
+
 trait PostCommand {
   def ts: Long
 
@@ -9,6 +12,7 @@ trait PostCommand {
 case class CreatePostCommand(ts: Long,
                              postId: String,
                              name: String,
+                             replyTo: ActorRef[SummaryPost],
                              address: String) extends PostCommand
 
 

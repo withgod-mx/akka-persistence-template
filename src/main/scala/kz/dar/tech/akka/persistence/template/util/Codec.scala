@@ -1,6 +1,6 @@
 package kz.dar.tech.akka.persistence.template.util
 
-import kz.dar.tech.akka.persistence.template.model.{EmployeeDTO, EmployeeLayoff, Family, Summary}
+import kz.dar.tech.akka.persistence.template.model.{EmployeeDTO, EmployeeLayoff, Family, PostDTO, Summary}
 import io.circe.{Decoder, Encoder}
 import cats.syntax.functor._
 import io.circe.generic.auto._
@@ -18,4 +18,6 @@ trait Codec {
   implicit val summaryEncodeDecode: EncoderDecoder[Summary] = DerivedEncoderDecoder[Summary]
 
   implicit val layoffEncodeDecode: EncoderDecoder[EmployeeLayoff] = DerivedEncoderDecoder[EmployeeLayoff]
+
+  implicit val postEncodeDecode: EncoderDecoder[PostDTO] = DerivedEncoderDecoder[PostDTO]
 }

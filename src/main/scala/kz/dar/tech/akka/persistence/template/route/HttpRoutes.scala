@@ -5,7 +5,9 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.typesafe.config.Config
 
-class HttpRoutes()(implicit system: ActorSystem[_], config: Config) {
+import scala.concurrent.ExecutionContext
+
+class HttpRoutes()(implicit system: ActorSystem[_], implicit val executionContext: ExecutionContext, config: Config) {
 
   val routes: Route = pathPrefix("api") {
     pathPrefix("v1") {
@@ -17,7 +19,8 @@ class HttpRoutes()(implicit system: ActorSystem[_], config: Config) {
         },
         new EmployeeRoutes().routes,
         new SwaggerSite().swaggerSiteRoute,
-        new SwaggerRoutes().routes
+        new SwaggerRoutes().routes,
+        new PostRoute().routes
       )
     }
   }

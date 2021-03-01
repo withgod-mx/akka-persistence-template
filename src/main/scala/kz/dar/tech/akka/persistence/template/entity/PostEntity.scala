@@ -7,6 +7,7 @@ import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, RetentionC
 import kz.dar.tech.akka.persistence.template.adapter.PostEventAdapter
 import kz.dar.tech.akka.persistence.template.command.{CreatePostCommand, PostCommand, RegisterPostCommand}
 import kz.dar.tech.akka.persistence.template.event.{CreatePostEvent, PostEvent, RegisterPostEvent}
+import kz.dar.tech.akka.persistence.template.model.SummaryPost
 
 object PostEntity {
 
@@ -99,7 +100,15 @@ object PostEntity {
               address = cmd.address
             )
 
-            Effect.persist(evt)
+            Effect.persist(evt).thenReply(cmd.replyTo)(_ =>
+              SummaryPost(
+                ts = cmd.ts,
+                name = cmd.name,
+                postId = cmd.postId,
+                address = cmd.address,
+                status = "CREATE"
+              )
+            )
           }
 
           case _ => throw new RuntimeException("Error")

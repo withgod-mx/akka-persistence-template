@@ -11,6 +11,7 @@ import kz.dar.tech.akka.persistence.template.util.EventProcessorSettings
 
 import java.io.File
 import java.util.concurrent.CountDownLatch
+import scala.concurrent.ExecutionContext
 
 /**
  * Template persistence with emdedded cassandra.
@@ -45,6 +46,8 @@ object Boot {
       val httpPort = context.system.settings.config.getInt("http-server.port")
 
       val settings = EventProcessorSettings(system)
+
+      implicit val executionContext = system.executionContext
 
       EmployeeEntityProto.init(system, settings)
 
